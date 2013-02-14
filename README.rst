@@ -48,7 +48,7 @@ Example Usage
    $vouchers = $v->getVouchers();
    echo "I have ", count($vouchers), " active vouchers.\n";
 
-For more examples, see ``example/test.py`` in source.
+For more examples, see `example/test.py`_ in source.
 
 
 Documentation
@@ -69,3 +69,4 @@ See the LICENSE file for full details.
 .. _`docs`: https://vingd-api-for-php.readthedocs.org/en/latest/
 .. _`GitHub`: https://github.com/vingd/vingd-api-php/
 .. _`demos`: http://docs.vingd.com/
+.. _`example/test.py`: https://github.com/vingd/vingd-api-php/blob/master/example/test.php
