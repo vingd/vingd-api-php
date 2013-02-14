@@ -266,7 +266,7 @@ class Vingd {
     }
     
     /**
-     * Creates (registers) an object in the Vingd Objects Registry.
+     * Creates (registers) an object in the Vingd Object Registry.
      *
      * @param string $name Object's name.
      * @param string $url Object's callback URL.
@@ -286,77 +286,80 @@ class Vingd {
     }
     
     /**
-     * Updates an object enrolled in the Vingd Registry.
+     * Updates an object enrolled in the Vingd Object Registry.
      *
-     * @param integer $oid
-     *      Object ID, as returned by `createObject()`.
-     * @param array $description
-     *      Object description. It MUST contain at least two keys: 'name' and
-     *      'url'. It CAN, however, contain arbitrary number of user-defined,
-     *      custom entries (but up to 4 KiB of data overall, when JSON-encoded).
-     * @param enumeration $class
-     *      [deprecated, ignored]
+     * @param integer $oid Object ID, as returned by `createObject()`.
+     * @param string $name Object's new name.
+     * @param string $url Object's new callback URL.
      * 
-     * @return integer Object ID assigned in Registry.
+     * @return integer Object ID assigned in Vingd.
      * @throws VingdException, Exception
      */
-    public function update($oid, $description, /*ignored*/$class = null) {
+    public function updateObject($oid, $name, $url) {
         $data = array(
-            "description" => $description
+            "description" => array(
+                "name" => $name,
+                "url" => $url
+            )
         );
         $ret = $this->request('PUT', "/registry/objects/$oid/", json_encode($data));
         return $this->unpackBatchResponse($ret, 'oid');
     }
+    
+    /**
+     * Fetches object with id `$oid`.
+     *
+     * @return Array Vingd object.
+     * @throws VingdException, Exception
+     */
+    public function getObject($oid) {
+        return $this->request('GET', "/registry/objects/$oid/");
+    }
+    
+    /**
+     * Fetches all objects for the authenticated user.
+     *
+     * @return List of Arrays A list of Vingd objects.
+     * @throws VingdException, Exception
+     */
+    public function getObjects() {
+        return $this->request('GET', "/registry/objects/");
+    }
 
     /**
-     * Contacts the Vingd Broker and generates a new order for selling the object
-     * $oid under the defined terms ($price, expiry date, etc.).
+     * Creates an order for object ``oid``, with price set to ``price`` and
+     * validity until ``expires``.
      * 
      * @param integer $oid
-     *      Identifier of the object to be sold, as in Vingd Registry.
+     *      Identifier of the object to be sold (see `createObject()`).
      * @param float $price
-     *      Object's price in VINGDs. Only first two decimal digits are stored.
+     *      Object's price in VINGDs. Rounded to two decimal digits.
      * @param string $context
      *      Arbitrary (user-defined) context handle of this purchase. The
      *      $context shall be referenced on the access verification handler URL.
      *      (Usage discouraged for sensitive data.)
-     * @param string $entitlement_expires
-     *      [deprecated, ignored]
-     * @param string $entitlement_count
-     *      [deprecated, ignored]
-     * @param string $order_expires
+     * @param string $expires
      *      Expiry timestamp / validity period of the order being generated
      *      (accepts any PHP parsable date/time string).
      *      Default: '+15 minutes' (== order expires in 15 minutes)
-     * @param string $date_format
-     *      Date format string used for formatting of return dates in order.
-     * @param array $cosellers
-     *      [deprecated, ignored]
-     * @param array $shares
-     *      [deprecated, ignored]
      * 
      * @return array Order data
      * @throws VingdException, Exception
      */
-    public function order(
+    public function createOrder(
         $oid, $price, $context = null,
-        /*ignored*/$entitlement_expires = null,
-        /*ignored*/$entitlement_count = null,
-        $order_expires = Vingd::EXP_ORDER,
-        $date_format = Vingd::DATE_ISO,
-        /*ignored*/$cosellers = null,
-        /*ignored*/$shares = null
+        $expires = Vingd::EXP_ORDER
     ) {
         $data = array(
             "price" => intval($price * 100),
-            "order_expires" => $this->toIsoDate($order_expires)
+            "order_expires" => $this->toIsoDate($expires)
         );
         $ret = $this->request('POST', "/objects/$oid/orders", json_encode($data));
         $id = $this->unpackBatchResponse($ret);
         $cx = is_null($context) ? array() : array('context' => $context);
-        $data_human = array(
+        $order = array(
             "id" => $id,
-            "expires" => $this->toCustomDate($date_format, $order_expires),
+            "expires" => $this->toIsoDate($expires),
             "object" => array(
                 "id" => $oid,
                 "price" => $data['price']
@@ -366,11 +369,12 @@ class Vingd {
                 "popup" => $this->buildURL("{$this->frontend}/popup/orders/$id/add/", $cx)
             )
         );
-        return $data_human;
+        return $order;
     }
     
     /**
-     * Verifies the token of purchase thru Vingd Broker.
+     * Verifies purchase token ``tid`` and returns token data associated with it
+     * and bound to object ``oid``.
      *
      * If token was invalid (purchase can not be verified), a VingdException is
      * thrown.
@@ -380,15 +384,15 @@ class Vingd {
      *      Access token user brings in, as returned from Vingd user frontent via
      *      callback link.
      *      \n
-     *      verify() accepts $token as either \b string (as read from \tt{$_GET['token']}
-     *      on callback processor), \i or as <b>PHP Array</b> (json-decoded from the
-     *      URL).
+     *      verifyPurchase() accepts $token as either \b string (as read from
+     *      \tt{$_GET['token']} on callback processor), \i or as
+     *      <b>PHP Array</b> (json-decoded from the URL).
      *      \n
-     *      You should always verify the token from Vingd user frontent that
-     *      user brings you to ensure the user has access rights to your object
-     *      and/or service. Successful token verification guarantees Vingd
-     *      Broker has reserved user funds for the seller. Those funds will be
-     *      transfered after seller commits purchase completion notification.
+     *      You should always verify the token the user brings in from Vingd
+     *      frontend to ensure the user has access rights to your object and/or
+     *      service. Successful token verification guarantees Vingd Broker has
+     *      reserved user vingds for the seller. Those vingds will be transfered
+     *      after seller commits the purchase (see `commitPurchase()`)
      * 
      * @return array
      *      Purchase details:
@@ -399,11 +403,11 @@ class Vingd {
      *        - 'purchaseid':
      *              Purchase ID
      *        - 'transferid':
-     *              Money transfer (from user to Broker) ID
+     *              Vingd transfer ID
      * 
      * @throws VingdException, Exception
      */
-    public function verify($token) {
+    public function verifyPurchase($token) {
         if (is_string($token)) {
             $token = json_decode(stripslashes($token), true);
         }
@@ -420,13 +424,15 @@ class Vingd {
     }
     
     /**
-     * Commits user's reserved funds to seller account. Call commit() upon
-     * successful delivery of paid content to the user.
+     * Commits the purchase (defined with ``purchaseid`` and ``transferid`) as
+     * finished.
      *
-     * If you do not call commit() user shall be automatically refunded.
+     * Call commitPurchase() upon successful delivery of paid content
+     * to the user. If you do not call commitPurchase() user shall be
+     * automatically refunded.
      * 
      * @param array $purchase
-     *      User purchase description, as returned by Vingd Broker upon
+     *      User purchase description, as returned by `verifyPurchase()` upon
      *      successful token verification.
      * 
      * @return array
@@ -435,7 +441,7 @@ class Vingd {
      * 
      * @throws VingdException, Exception
      */
-    public function commit($purchase) {
+    public function commitPurchase($purchase) {
         $purchaseid = $purchase['purchaseid'];
         $transferid = $purchase['transferid'];
         return $this->request(
@@ -461,7 +467,7 @@ class Vingd {
      * @return int User ID.
      * @throws VingdException, Exception
      */
-    public function getUserID() {
+    public function getUserId() {
         $profile = $this->getUserProfile();
         return $profile['uid'];
     }
@@ -472,7 +478,8 @@ class Vingd {
      * @return array
      *      Account profile:
      *        - 'uid' key: User ID (integer).
-     *        - 'balance' key: Account balance (floating point number with two significant digits).
+     *        - 'balance' key: Account balance (floating point number with two
+     *           significant digits).
      *
      * @throws VingdException, Exception
      */
@@ -483,7 +490,10 @@ class Vingd {
     }
     
     /**
-     * Shorthand to fetch current user's balance (as float, see account()).
+     * Shorthand to fetch authenticated user's balance.
+     * 
+     * @return float Account balance.
+     * @throws VingdException, Exception
      */
     public function getAccountBalance() {
         $account = $this->getAccount();
@@ -494,13 +504,13 @@ class Vingd {
      * Fetches a filtered list of vingd transfers related to the authenticated
      * user.
      * 
-     * Filtering is possible with UID, date and number (count).
+     * Filtering is possible with UID, date and count.
      * 
      * Usage example:
      * \code
-     *      $v = new Vingd();
+     *      $v = new Vingd(...);
      *      $transfers = $v->getTransfers(
-     *          array('to'=>$v->uid()),
+     *          array('to'=>$v->getUserId()),
      *          array('since'=>'20101005T154000+02')
      *      );
      *      print_r($transfers);
@@ -513,12 +523,11 @@ class Vingd {
      *        - 'to' => <uid>:
      *              Only transfers to this UID shall be returned.
      *        .
-     *        Note: at least one of these keys MUST be specified, and
-     *        (for non-certified users) it MUST be equal to the authenticated
-     *        user UID.
+     *        Note: at least one of these keys MUST be specified, and it MUST be
+     *        equal to the authenticated user UID.
      * 
      * @param array $limit
-     *      Date/number filters.
+     *      Date/count filters.
      *        - 'first' => <integer>:
      *              Number of transfers to return (counting from first,
      *              ordered by date of creation)
@@ -531,7 +540,7 @@ class Vingd {
      *              Transfers older than this point in time shall be returned.
      * 
      * @return array
-     *      List of transfers. Each list item is an associative array with the
+     *      A list of transfers. Each list item is an associative array with the
      *      following keys:
      *        - 'id':
      *              Transfer ID, as integer.
@@ -641,7 +650,6 @@ class Vingd {
             "description" => $raw["description"],
             "message" => $raw["message"],
             "until" => $raw["ts_valid_until"],
-            "created" => $raw["ts_created"],
             "code" => $raw["vid_encoded"],
             "gid" => $raw["gid"],
             "urls" => array(
@@ -653,8 +661,8 @@ class Vingd {
         if (array_key_exists("action", $raw)) {
             $voucher["action"] = $raw["action"];
         }
-        if (array_key_exists("timestamp", $raw)) {
-            $voucher["timestamp"] = $raw["timestamp"];
+        if (array_key_exists("ts_created", $raw)) {
+            $voucher["created"] = $raw["ts_created"];
         }
         return $voucher;
     }
