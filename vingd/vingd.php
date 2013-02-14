@@ -13,133 +13,6 @@
  */
 
 
-/** \mainpage Vingd API PHP
-
-\section basics The basics
-
-    You communicate with Vingd system thru Vingd Broker, using the Vingd object in PHP (see
-    kapi.php), or the <a href="http://docs.vingd.com/apis/python/">Python module</a>. Direct
-    communication with Vingd Broker over HTTP is also simple (see \ref technical).
-    
-    \subsection step0 An overview
-        
-        Vingd enables you to monetize your digital goods by "selling" the access rights to your
-        content/service. You host the content and you control the access, and we handle the access
-        rights. As the first approximation, Vingd can be seen as a payment gateway.
-        
-        The content or service of yours has an abstract representation on Vingd, called \term{Vingd
-        Object}. Object enrollment (aka registration) is a one-time process, after which an object
-        can be sold to Vingd users. Terms of purchase (namely, the price) and object access
-        parameters are defined by you, the seller, in what is called \term{Object Order}. Orders can
-        be viewed as bills you give to users. User pays that bill on <a
-        href="http://www.vingd.com/">Vingd [user frontend]</a> and it gets object access rights
-        assigned for the object you referenced in the order. Each time a user tries to access your
-        object (the location you specified upon object enrollment and which you control), you should
-        demand an access token from your user, issued by Vingd Broker. With the access token we
-        shall vouch that the specific user has paid the access, and you should allow him to view
-        the object (content/service).
-        
-        \deprecated Access can be limited in \b time and/or by \b count (i.e. access flag is
-        a \term{counting semaphore} with a time limit).
-        
-        Thru Vingd, you can also reward users with VINGDs via Vingd Vouchers (see \ref vouchers).
-    
-    \subsection step1 Registering objects
-    
-        In order to be able to sell anything thru Vingd, you must \term{enroll} (i.e.
-        \term{register}) an abstract representation of that item, as an object in our Registry (thru
-        Vingd Broker). Objects are enrolled with Vingd::register() function. During object
-        enrollment, a unique \term{Object ID} (\term{OID}) is assigned to that object. Store that
-        \term{OID}, since you'll be using it as the object handle.
-        
-        Object description is a dictionary (associative array) which has only two mandatory keys:
-        \c name and \c url, but can store up to 4 KiB of data. Make sure the \c url points to a
-        valid location, because users will be redirected there upon object purchase (consider this
-        \c url to represent the object location, according to the REST paradigm). More precisely,
-        the complete URL where user will be redirected is object's \c url with \term{Token ID} and
-        \term{Object ID} glued as GET parameters.
-    
-    \subsection step2 Selling an object
-    
-        To sell any of your enrolled objects, you must create an \term{Object Order} which shall
-        encapsulate the terms under which the object is being sold to the customer (e.g. price).
-        Vingd::order() function facilitates order creation. Object and price are defined with
-        \c oid and integer \c price in VINGDs (rounded to cents). Expiry date of the very
-        order is defined with \c order_expires.
-        
-        It is important to note that Orders are \b not bound to a specific user. That means you
-        could (and preferably would) generate one order with expiry time longer than the default
-        15mins and offer that same order to more than one user (e.g. you could have special order
-        for each "class" of your users). The advantage of having pre-generated orders is you are
-        cutting down the overhead of object purchase on your site - you don't have to generate a new
-        order in background for every user's "buy-click", but simply direct the user to
-        order-purchase-link on Vingd (as returned upon the initial Order making).
-        
-        On successful Order creation, you shall be given an URL pointing to your Order on Vingd
-        frontend (see \tt{['urls']['redirect']} element of a value returned from Vingd::order()).
-        To enable an user to pay the access to your object, you should direct her exactly to that
-        very URL (if you're using <a href="http://docs.vingd.com/libs/popup/">Vingd Popup
-        Library</a> you should use \tt{order['urls']['popup']}).
-    
-    \subsection step3 Verifying user access rights
-    
-        Vingd Broker provides implementation (thru Vingd Registry) of object access control list
-        for all objects and all users in system. Access rights are defined (or redefined) upon
-        purchase (according to parameters in Order), and updated each time a content provider
-        (seller) verifies a \tt{(Token ID, Object ID)} pair; \tt{(tid, oid)} for short.
-        
-        Tokens are issued by Broker and presented to user via Vingd frontend, at least on purchase,
-        but also later on request. Token is short-lived (typically 15 minutes) and during its
-        lifespan it represents a voucher that can be checked by Broker to see if the carrier of the
-        \tt{(tid, oid)} pair has rights for accessing object \c oid.
-        
-        If user access is granted, token verification interface returns \term{Token Description}
-        (see Vingd::verify()).
-        
-        You will want to verify a token when user returns from Vingd frontend (or a popup closes, in
-        the <a href="http://docs.vingd.com/libs/popup/0.8/vingd.html#popupParams.onSuccess">
-        \tt{onSuccess} callback</a>) and comes back carrying a token as a short-term guarantee she
-        just paid for your object, according to your Order. If verification succeeds, you should
-        serve her the content (object).
-    
-    \subsection step4 Wrapping up the purchase
-    
-        Once you have successfully served the content user has paid for, you should notify the
-        Vingd Broker, referencing the \term{Order ID}, \term{Purchase ID} and \term{Transfer ID}
-        (the last two are returned in \term{Token Description} upon token verification). This
-        completes the purchase.
-        
-        If you don't do Vingd::commit(), Vingd Broker assumes a seller (you) failed to deliver the
-        content or service to the user and does an automatic refund.
-    
-    \subsection vouchers Creating Vingd vouchers
-        
-        Vingd::createVoucher() allows you to allocate a certain amount of VINGDs from your account
-        and offer it to a Vingd user. Voucher code looks like \tt{LXKG-TBR-HQV} (only letters A-Z
-        and digits 0-9 are significant; all other characters are ignored). Upon voucher creation,
-        Vingd::createVoucher() returns a structure with an URL pointing to Vingd frontend which
-        user can follow to use the voucher. Vingd popup can also be used, see <a
-        href="http://docs.vingd.com/libs/popup/0.8/overview.html#dynamic-voucher-order-fetch">here</a>.
-
-
-\section technical A few technical details
-
-    <a href="https://api.vingd.com/broker/v1/">Vingd Broker</a> has a very simple REST interface to
-    a complete Vingd backend. For example, to retrieve a list of object owned, execute a \tt{GET}
-    request on <a href="https://api.vingd.com/broker/v1/registry/objects/">https://api.vingd.com/broker/v1/registry/objects/</a>
-    resource. (Previously https://broker.knopso.com:8004/registry/objects/) Creating (enrolling, or registering) a new object is slightly more complex, but
-    nevertheless still trivial: \tt{POST} a JSON-encoded description of the object to that same URL
-    (which, btw, represents a collection of your objects).
-    
-    Much more details on Vingd Broker interface, from a Python perspective can
-    be found at <a href="http://docs.vingd.com/apis/python/">Python module docs</a>. Since sellers
-    (and other regular Vingd users) are so called \term{non-certified users} (as opposed to Vingd
-    frontend, for example), not all Broker methods/resources are accessible to them. Filtered
-    documentation of Broker interface for non-certified users is also available.
-
-*/
-
-
 require_once("http.php");
 
 /**
@@ -236,15 +109,15 @@ class Vingd {
      * Vingd API initialization.
      *
      * @param string $username Vingd username.
-     * @param string $pwhash SHA1(plain_text_vingd_password).
+     * @param string $password Vingd password.
      * @param string $backend URL of Vingd Broker (backend service).
      * @param string $frontend URL of Vingd user frontend.
      */
     function __construct(
-        $username = null, $pwhash = null,
+        $username = null, $password = null,
         $backend = null, $frontend = null
     ) {
-        $this->init($username, $pwhash, $backend, $frontend);
+        $this->init($username, sha1($password), $backend, $frontend);
     }
     
     /**
@@ -570,8 +443,19 @@ class Vingd {
      * @return array User profile
      * @throws VingdException, Exception
      */
-    public function profile() {
+    public function getUserProfile() {
         return $this->request('GET', '/id/users/username='.$this->username);
+    }
+    
+    /**
+     * Shorthand to fetch authenticated user's id (integer).
+     *
+     * @return int User ID.
+     * @throws VingdException, Exception
+     */
+    public function getUserID() {
+        $profile = $this->getUserProfile();
+        return $profile['uid'];
     }
     
     /**
@@ -584,7 +468,7 @@ class Vingd {
      *
      * @throws VingdException, Exception
      */
-    public function account() {
+    public function getAccount() {
         $account = $this->request('GET', '/fort/accounts/');
         $account['balance'] /= 100.0;
         return $account;
@@ -593,28 +477,21 @@ class Vingd {
     /**
      * Shorthand to fetch current user's balance (as float, see account()).
      */
-    public function balance() {
-        $account = $this->account();
+    public function getAccountBalance() {
+        $account = $this->getAccount();
         return $account['balance'];
     }
     
     /**
-     * Shorthand to fetch current user's id (integer, see account()).
-     */
-    public function uid() {
-        $account = $this->account();
-        return $account['uid'];
-    }
-    
-    /**
-     * Fetches a filtered list of money transfer descriptions.
+     * Fetches a filtered list of vingd transfers related to the authenticated
+     * user.
      * 
      * Filtering is possible with UID, date and number (count).
      * 
      * Usage example:
      * \code
      *      $v = new Vingd();
-     *      $transfers = $v->transfers(
+     *      $transfers = $v->getTransfers(
      *          array('to'=>$v->uid()),
      *          array('since'=>'20101005T154000+02')
      *      );
@@ -688,7 +565,7 @@ class Vingd {
      * @throws VingdException, Exception
      * 
      */
-    public function transfers(
+    public function getTransfers(
         $uid = array('from' => null, 'to' => null),
         $limit = array('first' => null, 'last' => null, 'since' => null, 'until' => null)
     ) {
