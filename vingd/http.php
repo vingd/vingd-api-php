@@ -17,7 +17,7 @@ class Http {
         'sslkey' => null, 'sslcert' => null,
         'auth' => null, 'username' => null, 'password' => null,
         'timeout' => 5, 'redirection' => 5, 'httpversion' => '1.1',
-        'headers' => array('user-agent' => 'KAPI'),
+        'headers' => array('user-agent' => 'VingdAPI'),
         'body' => null, 'cookies' => array()
     );
     

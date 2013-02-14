@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Vingd API interface for PHP.
  *
@@ -12,8 +13,8 @@
  * 
  */
 
-
 require_once("http.php");
+
 
 /**
  * Standard HTTP response codes used inside Vingd ecosystem.
@@ -37,6 +38,10 @@ class ResponseCodes {
     const NOT_IMPLEMENTED = 501;
 }
 
+
+/**
+ * Vingd (service-side) errors are thrown as VingdException.
+ */
 class VingdException extends Exception {
     private $context = null;
     private $subcode = 0;
@@ -59,10 +64,20 @@ class VingdException extends Exception {
     }
 }
 
+
+/**
+ * Vingd API interface class.
+ */
 class Vingd {
-    // default vingd (server) backend and (user) frontend base urls
-    const URL_BACKEND = 'https://api.vingd.com/broker/v1';
+    const USER_AGENT = 'vingd-api-php/1.6';
+
+    // production urls
+    const URL_ENDPOINT = 'https://api.vingd.com/broker/v1';
     const URL_FRONTEND = 'https://www.vingd.com';
+    
+    // sandbox urls
+    const URL_ENDPOINT_SANDBOX = 'https://api.vingd.com/sandbox/broker/v1';
+    const URL_FRONTEND_SANDBOX = 'http://www.sandbox.vingd.com';
     
     // default expiry date for object order: 15 minutes from now
     const EXP_ORDER = '+15 minutes';
@@ -79,13 +94,6 @@ class Vingd {
     // unix epoch timestamp
     const DATE_UNIX = 'U';
     
-    // [deprecated, ignored]
-    const CLSID_GENERIC = 0;
-    const CLSID_POST = 1;
-    const CLSID_SUBSCRIPTION = 2;
-    const EXP_ENTITLEMENT = null;
-    const CNT_ENTITLEMENT = 1;
-    
     public $TRANSFER_CLASSNAMES = array(
         1 => 'Purchase',
         2 => 'Ad reward',
@@ -100,9 +108,9 @@ class Vingd {
     );
     
     // connection parameters
-    private $username = null;
-    private $pwhash = null;
-    private $backend = Vingd::URL_BACKEND;
+    private $apikey = null;
+    private $apisecret = null;
+    private $endpoint = Vingd::URL_ENDPOINT;
     private $frontend = Vingd::URL_FRONTEND;
     
     /**
@@ -110,14 +118,14 @@ class Vingd {
      *
      * @param string $username Vingd username.
      * @param string $password Vingd password.
-     * @param string $backend URL of Vingd Broker (backend service).
+     * @param string $endpoint URL of Vingd Broker (backend).
      * @param string $frontend URL of Vingd user frontend.
      */
     function __construct(
         $username = null, $password = null,
-        $backend = null, $frontend = null
+        $endpoint = null, $frontend = null
     ) {
-        $this->init($username, sha1($password), $backend, $frontend);
+        $this->init($username, $password, $endpoint, $frontend);
     }
     
     /**
@@ -125,28 +133,30 @@ class Vingd {
      * @see __construct()
      */
     public function init(
-        $username, $pwhash, 
-        $backend = null, $frontend = null
+        $username, $password,
+        $endpoint = null, $frontend = null
     ) {
-        $this->username = $username;
-        $this->pwhash = $pwhash;
-        if ($backend) $this->backend = $backend;
+        $this->apikey = $username;
+        $this->apisecret = sha1($password);
+        if ($endpoint) $this->endpoint = $endpoint;
         if ($frontend) $this->frontend = $frontend;
     }
     
-    // issues a https request to vingd broker ($this->backend)
+    // issues a https request to vingd broker ($this->endpoint)
     private function request($verb, $resource, $data = '') {
         try {
             // the WP way of doing http request (WP_Http is introduced in wp 2.7)
             $request = new Http();
             $result = $request->request(
-                $this->backend . $resource,
+                $this->endpoint . $resource,
                 array(
                     'method' => $verb,
                     'body' => $data,
                     'auth' => 'basic',
-                    'username' => $this->username,
-                    'password' => $this->pwhash
+                    'username' => $this->apikey,
+                    'password' => $this->apisecret,
+                    'sslverify' => true,
+                    'headers' => array('user-agent' => $this::USER_AGENT)
                 )
             );
             
@@ -181,7 +191,6 @@ class Vingd {
                 "(HTTP error $code: {$result['response']['message']})."
             );
         }
-        
     }
     
     // converts various date/time and period formats into custom date format
@@ -257,21 +266,20 @@ class Vingd {
     }
     
     /**
-     * Registers (enrolls) an object into the Vingd Registry.
+     * Creates (registers) an object in the Vingd Objects Registry.
      *
-     * @param array $description
-     *      Object description. It MUST contain at least two keys: 'name' and
-     *      'url'. It CAN, however, contain arbitrary number of user-defined,
-     *      custom entries (but up to 4 KiB of data overall, when JSON-encoded).
-     * @param enumeration $class
-     *      [deprecated, ignored]
+     * @param string $name Object's name.
+     * @param string $url Object's callback URL.
      * 
-     * @return integer Object ID assigned in Registry.
+     * @return integer Object ID assigned in Vingd.
      * @throws VingdException, Exception
      */
-    public function register($description, /*ignored*/$class = null) {
+    public function createObject($name, $url) {
         $data = array(
-            "description" => $description
+            "description" => array(
+                "name" => $name,
+                "url" => $url
+            )
         );
         $ret = $this->request('POST', "/registry/objects/", json_encode($data));
         return $this->unpackBatchResponse($ret, 'oid');
@@ -281,7 +289,7 @@ class Vingd {
      * Updates an object enrolled in the Vingd Registry.
      *
      * @param integer $oid
-     *      Object ID, as returned by `register()`.
+     *      Object ID, as returned by `createObject()`.
      * @param array $description
      *      Object description. It MUST contain at least two keys: 'name' and
      *      'url'. It CAN, however, contain arbitrary number of user-defined,
