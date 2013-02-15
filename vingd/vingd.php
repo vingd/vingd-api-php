@@ -691,6 +691,30 @@ class Vingd {
         $vouchers = $this->request('GET', "/vouchers/history/");
         return $this->normalizeVoucherList($vouchers);
     }
+    
+    /**
+     * Rewards user defined with `$huid` with `$amount` vingds, transfered from
+     * the account of the authenticated user.
+     *
+     * @param string(40) $huid Hashed User ID, bound to account of the
+     *      authenticated user (doing the request).
+     * @param float $amount Amount in vingds.
+     * @param string $description Transaction description (optional).
+     *
+     * @note The consumer has to have ``transfer.outbound`` ACL flag set.
+     *
+     * @returns array ('transfer_id' => <transfer_id>)
+     * @throws VingdException, Exception
+     * 
+     */
+    public function rewardUser($huid, $amount, $description = null) {
+        return $this->request('POST', '/rewards/', json_encode(array(
+            'huid_to' => $huid,
+            'amount' => intval($amount * 100),
+            'description' => $description
+        )));
+    }
+    
 }
 
 ?>

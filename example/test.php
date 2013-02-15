@@ -53,7 +53,13 @@ $huid_buyer = $purchase['huid'];
 echo "Purchase verified (buyer's HUID = $huid_buyer).\n";
 
 $commit = $v->commitPurchase($purchase);
-print "Content served, and purchase committed.\n"
+echo "Content served, and purchase committed.\n";
 
+//
+// direct rewarding
+//
+
+$reward = $v->rewardUser($huid_buyer, 0.75, 'Testing direct rewarding');
+echo "User rewarded (transfer id = {$reward['transfer_id']}).\n";
 
 ?>
