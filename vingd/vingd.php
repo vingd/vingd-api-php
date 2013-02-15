@@ -309,7 +309,7 @@ class Vingd {
     /**
      * Fetches object with id `$oid`.
      *
-     * @return Array Vingd object.
+     * @return Array Vingd object description.
      * @throws VingdException, Exception
      */
     public function getObject($oid) {
@@ -327,8 +327,8 @@ class Vingd {
     }
 
     /**
-     * Creates an order for object ``oid``, with price set to ``price`` and
-     * validity until ``expires``.
+     * Creates an order for object `$oid`, with price set to `$price` and
+     * validity until `$expires`.
      * 
      * @param integer $oid
      *      Identifier of the object to be sold (see `createObject()`).
@@ -343,7 +343,7 @@ class Vingd {
      *      (accepts any PHP parsable date/time string).
      *      Default: '+15 minutes' (== order expires in 15 minutes)
      * 
-     * @return array Order data
+     * @return array Vingd order description.
      * @throws VingdException, Exception
      */
     public function createOrder(
@@ -373,8 +373,8 @@ class Vingd {
     }
     
     /**
-     * Verifies purchase token ``tid`` and returns token data associated with it
-     * and bound to object ``oid``.
+     * Verifies purchase token `$tid` and returns token data associated with it
+     * and bound to object `$oid`.
      *
      * If token was invalid (purchase can not be verified), a VingdException is
      * thrown.
@@ -389,7 +389,7 @@ class Vingd {
      *      <b>PHP Array</b> (json-decoded from the URL).
      *      \n
      *      You should always verify the token the user brings in from Vingd
-     *      frontend to ensure the user has access rights to your object and/or
+     *      frontend to ensure the user has access rights for your object and/or
      *      service. Successful token verification guarantees Vingd Broker has
      *      reserved user vingds for the seller. Those vingds will be transfered
      *      after seller commits the purchase (see `commitPurchase()`)
@@ -424,7 +424,7 @@ class Vingd {
     }
     
     /**
-     * Commits the purchase (defined with ``purchaseid`` and ``transferid`) as
+     * Commits the purchase (defined with `$purchaseid` and `$transferid`) as
      * finished.
      *
      * Call commitPurchase() upon successful delivery of paid content
