@@ -224,4 +224,35 @@ Rewarding
          ``code`` and ``urls`` (which branches to ``redirect`` URL and ``popup``
          URL).
       :throws: VingdException, Exception
+
+Account-related
+~~~~~~~~~~~~~~~
+
+   .. php:method:: getUserProfile()
+      
+      Fetches profile of the authenticated user.
+      
+      :returns: (array) User profile.
+      :throws: VingdException, Exception
    
+   .. php:method:: getUserId()
+      
+      Shorthand to fetch authenticated user's id.
+      
+      :returns: (integer) User ID.
+      :throws: VingdException, Exception
+   
+   .. php:method:: getAccount()
+      
+      Fetches account info for the authenticated user.
+      
+      :returns: (array) Account profile ('uid' => <user_id>, 'balance' =>
+         <vingd_balance>).
+      :throws: VingdException, Exception
+   
+   .. php:method:: getAccountBalance()
+      
+      Shorthand to fetch authenticated user's balance.
+      
+      :returns: (float) Account balance.
+      :throws: VingdException, Exception
