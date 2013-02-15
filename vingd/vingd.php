@@ -623,7 +623,9 @@ class Vingd {
      *      ``[-_a-zA-Z0-9]{1,32}``). User can use only one voucher per group.
      * @param string $description Voucher internal description. Optional, but
      *      can be helpful for tracking.
-     *      
+     *
+     * @return array Voucher description.
+     * 
      * Important: user doing the request has to have 'voucher.add' permission
      * (if you don't have it, contact us).
      * 

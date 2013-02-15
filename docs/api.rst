@@ -39,6 +39,12 @@ Constants
       Default order expiry, '+15 minutes'. The order expires in 15 minutes,
       relative to the time of creation.
 
+   .. php:const:: EXP_VOUCHER
+   
+      Default voucher expiry, '+1 month'. The voucher expires in one month,
+      relative to the time of creation. When it expires, allocated funds are
+      refunded to the issuer's Vingd account.
+
 Purchase
 ~~~~~~~~
    
@@ -150,3 +156,72 @@ Purchase
       :returns: (array) ('ok => true), or fails with VingdException.
       :throws: VingdException, Exception
 
+Rewarding
+~~~~~~~~~
+   
+   .. php:method:: createVoucher($amount, $until = Vingd::EXP_VOUCHER, $message = '', $gid = null, $description = null)
+   
+      Makes a new voucher.
+      
+      :param float $amount: Voucher amount in VINGDs.
+      :param date $until: Timestamp of voucher expiry (accepts any
+         PHP/strtotime-parsable date/time string, including ISO 8601, RFC 822,
+         and most English date formats, as well as relative dates; e.g. '+1
+         day', '+1 month', etc.).
+         Default: :php:const:`Vingd::EXP_VOUCHER` ('+1 month', i.e. voucher
+         expires in one month). When it expires, allocated funds are refunded to
+         the issuer's Vingd account.
+      :param string $message: A message user shall be presented with after
+         submitting the voucher (on Vingd frontend).
+      :param string $gid: Voucher Group ID (alphanumeric string:
+         ``[-_a-zA-Z0-9]{1,32}``). User can use only one voucher per group.
+      :param string $description: Voucher internal description. Optional, but
+         can be helpful for tracking.
+      
+      :returns: (array) Voucher description. The most interesting keys being:
+         ``code`` and ``urls`` (which branches to ``redirect`` URL and ``popup``
+         URL).
+      :throws: VingdException, Exception
+   
+   .. php:method:: getActiveVouchers()
+      
+      Fetches a list of all active (non-expired) vouchers for the authenticated
+      user.
+      
+      :returns: (array) A list of voucher descriptions.
+      :throws: VingdException, Exception
+      
+   .. php:method:: getVouchers()
+      
+      Fetches a complete vouchers history (for the authenticated user). The list
+      includes **active**, **expired**, **used** and **revoked** vouchers
+      (discriminated via ``action`` key in voucher description).
+      
+      :returns: (array) A list of voucher descriptions.
+      :throws: VingdException, Exception
+   
+   .. php:method:: rewardUser($huid, $amount, $description = null)
+   
+      Rewards user defined with `$huid` with `$amount` vingds, transfered from
+      the account of the authenticated user.
+
+      :param float $amount: Voucher amount in VINGDs.
+      :param date $until: Timestamp of voucher expiry (accepts any
+         PHP/strtotime-parsable date/time string, including ISO 8601, RFC 822,
+         and most English date formats, as well as relative dates; e.g. '+1
+         day', '+1 month', etc.).
+         Default: :php:const:`Vingd::EXP_VOUCHER` ('+1 month', i.e. voucher
+         expires in one month). When it expires, allocated funds are refunded to
+         the issuer's Vingd account.
+      :param string $message: A message user shall be presented with after
+         submitting the voucher (on Vingd frontend).
+      :param string $gid: Voucher Group ID (alphanumeric string:
+         ``[-_a-zA-Z0-9]{1,32}``). User can use only one voucher per group.
+      :param string $description: Voucher internal description. Optional, but
+         can be helpful for tracking.
+      
+      :returns: (array) Voucher description. The most interesting keys being:
+         ``code`` and ``urls`` (which branches to ``redirect`` URL and ``popup``
+         URL).
+      :throws: VingdException, Exception
+   
