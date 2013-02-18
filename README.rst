@@ -42,7 +42,7 @@ Client initialization and account balance fetching:
 
     require_once('/path/to/vingd-api-php/vingd/vingd.php');
 
-    $VINGD_USERNAME = 'test@knopso.com';
+    $VINGD_USERNAME = 'test@vingd.com';
     $VINGD_PASSWORD = '123';
 
     // Initialize vingd client.
