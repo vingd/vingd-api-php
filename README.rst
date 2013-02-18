@@ -42,7 +42,7 @@ Example Usage
    
    $v = new Vingd("<vingd-login-username>", "<vingd-login-password>");
    
-   $balance = $v->getBalance();
+   $balance = $v->getUserBalance();
    echo "My balance is VINGD $balance.\n";
    
    $vouchers = $v->getActiveVouchers();

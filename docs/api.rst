@@ -242,17 +242,9 @@ Account-related
       :returns: (integer) User ID.
       :throws: VingdException, Exception
    
-   .. php:method:: getAccount()
+   .. php:method:: getUserBalance()
       
-      Fetches account info for the authenticated user.
-      
-      :returns: (array) Account profile ('uid' => <user_id>, 'balance' =>
-         <vingd_balance>).
-      :throws: VingdException, Exception
-   
-   .. php:method:: getAccountBalance()
-      
-      Shorthand to fetch authenticated user's balance.
+      Fetches authenticated user's account balance.
       
       :returns: (float) Account balance.
       :throws: VingdException, Exception

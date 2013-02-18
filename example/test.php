@@ -12,11 +12,12 @@ $v = new Vingd("test@knopso.com", "123", Vingd::URL_ENDPOINT_SANDBOX, Vingd::URL
 // profile/account
 //
 
-$balance = $v->getAccountBalance();
+$profile = $v->getUserProfile();
+print "I ({$profile['name']}) registered on {$profile['timestamp_created']}.\n";
+
+$balance = $v->getUserBalance();
 echo "My balance is VINGD $balance.\n";
 
-$vouchers = $v->getVouchers();
-echo "I have ", count($vouchers), " active vouchers.\n";
 
 //
 // voucher rewarding

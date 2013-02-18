@@ -458,7 +458,7 @@ class Vingd {
      * @throws VingdException, Exception
      */
     public function getUserProfile() {
-        return $this->request('GET', '/id/users/username='.$this->username);
+        return $this->request('GET', '/id/users/username='.$this->apikey);
     }
     
     /**
@@ -473,31 +473,14 @@ class Vingd {
     }
     
     /**
-     * Fetches account info for the authenticated user.
-     *
-     * @return array
-     *      Account profile:
-     *        - 'uid' key: User ID (integer).
-     *        - 'balance' key: Account balance (floating point number with two
-     *           significant digits).
-     *
-     * @throws VingdException, Exception
-     */
-    public function getAccount() {
-        $account = $this->request('GET', '/fort/accounts/');
-        $account['balance'] /= 100.0;
-        return $account;
-    }
-    
-    /**
      * Shorthand to fetch authenticated user's balance.
      * 
      * @return float Account balance.
      * @throws VingdException, Exception
      */
-    public function getAccountBalance() {
-        $account = $this->getAccount();
-        return $account['balance'];
+    public function getUserBalance() {
+        $account = $this->request('GET', '/fort/accounts/');
+        return $account['balance'] / 100.0;
     }
     
     /**
