@@ -45,7 +45,7 @@ Example Usage
    $balance = $v->getBalance();
    echo "My balance is VINGD $balance.\n";
    
-   $vouchers = $v->getVouchers();
+   $vouchers = $v->getActiveVouchers();
    echo "I have ", count($vouchers), " active vouchers.\n";
 
 For more examples, see `example/test.py`_ in source.
