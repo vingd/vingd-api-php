@@ -15,7 +15,7 @@ them access to digital goods.
 
 
 Vingd API for PHP
-=================
+-----------------
 
 Vingd API enables you to register Vingd objects you're selling, create Vingd
 purchase orders, verify and commit Vingd purchases. You can also reward users,
@@ -24,7 +24,7 @@ and `demos`_ are available.
 
 
 Installation
-============
+------------
 
 The last stable release of PHP Vingd API is available on `GitHub`_::
 
@@ -34,7 +34,7 @@ The last stable release of PHP Vingd API is available on `GitHub`_::
 
 
 Examples
-========
+--------
 
 Client initialization and account balance fetching:
 
@@ -52,7 +52,7 @@ Client initialization and account balance fetching:
     $balance = $v->getUserBalance();
 
 Sell content
-------------
+~~~~~~~~~~~~
 
 Wrap up vingd order and redirect user to confirm his purchase at vingd frontend:
 
@@ -89,7 +89,7 @@ expanded with purchase verification parameters.
     $commit = $v->commitPurchase($purchase);
 
 Reward user
------------
+~~~~~~~~~~~
 
 Reward user with vingd:
 
@@ -107,14 +107,14 @@ For more examples, see `example/test.php`_ in source.
 
 
 Documentation
-=============
+-------------
 
 Automatically generated documentation for latest stable version is available on:
 https://vingd-api-for-php.readthedocs.org/en/latest/.
 
 
 Copyright and License
-=====================
+---------------------
 
 Vingd API is Copyright (c) 2013 Vingd, Inc and licensed under the MIT license.
 See the LICENSE file for full details.
