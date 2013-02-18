@@ -103,7 +103,7 @@ Reward user with vingd:
     // Reward user.
     $reward = $v->rewardUser($REWARD_HUID, $REWARD_AMOUNT, $REWARD_DESCRIPTION);
 
-For more examples, see `example/test.py`_ in source.
+For more examples, see `example/test.php`_ in source.
 
 
 Documentation
