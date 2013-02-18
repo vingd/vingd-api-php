@@ -11,6 +11,7 @@ Contents:
    :maxdepth: 3
 
    README
+   overview
    api
 
 Indices and tables
