@@ -8,7 +8,7 @@ Vingd API for PHP Documentation
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    README
    api

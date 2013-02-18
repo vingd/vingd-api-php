@@ -1,15 +1,15 @@
 .. _api:
 
 
-Vingd API library reference 
-===========================
+Vingd library reference 
+=======================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
 
-Interface
----------
+Vingd class
+-----------
 
 .. php:class:: Vingd
 
