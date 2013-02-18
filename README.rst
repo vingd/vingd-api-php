@@ -96,9 +96,9 @@ Reward user with vingd:
 .. code-block:: php
 
     // Vingd hashed user id, as obtained in purchase procedure (previous example).
-    $REWARD_HUID = $purchase['huid']
-    $REWARD_AMOUNT = 0.75
-    $REWARD_DESCRIPTION = "Testing direct rewarding"
+    $REWARD_HUID = $purchase['huid'];
+    $REWARD_AMOUNT = 0.75;
+    $REWARD_DESCRIPTION = "Testing direct rewarding";
     
     // Reward user.
     $reward = $v->rewardUser($REWARD_HUID, $REWARD_AMOUNT, $REWARD_DESCRIPTION);
