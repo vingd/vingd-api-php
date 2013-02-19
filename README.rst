@@ -106,6 +106,8 @@ Transfer vingd directly on users account:
 Reward user with voucher
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+Redirect user to redeem his reward on vingd frontend:
+
 .. code-block:: php
 
     $VOUCHER_AMOUNT = 1.00;
