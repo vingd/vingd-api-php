@@ -88,10 +88,10 @@ expanded with purchase verification parameters.
     // Content is successfully served, commit vingd transaction.
     $commit = $v->commitPurchase($purchase);
 
-Reward user
------------
+Reward user directly
+--------------------
 
-Reward user with vingd:
+Transfer vingd directly on users account:
 
 .. code-block:: php
 
@@ -103,8 +103,21 @@ Reward user with vingd:
     // Reward user.
     $reward = $v->rewardUser($REWARD_HUID, $REWARD_AMOUNT, $REWARD_DESCRIPTION);
 
-For more examples, see `example/test.php`_ in source.
+Reward user with voucher
+------------------------
 
+.. code-block:: php
+
+    $VOUCHER_AMOUNT = 1.00;
+    $VOUCHER_VALID_PERIOD = '+7 days';
+
+    // Create vingd voucher.
+    $voucher = $v->createVoucher($VOUCHER_AMOUNT, $VOUCHER_VALID_PERIOD);
+    
+    // Redirect user to use voucher on vingd frontend:
+    $redirect_url = $voucher['urls']['redirect'];
+
+For more examples, see `example/test.php`_ in source.
 
 Documentation
 =============
