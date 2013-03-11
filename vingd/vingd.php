@@ -156,7 +156,7 @@ class Vingd {
                     'username' => $this->apikey,
                     'password' => $this->apisecret,
                     'sslverify' => true,
-                    'headers' => array('user-agent' => $this::USER_AGENT)
+                    'headers' => array('user-agent' => self::USER_AGENT)
                 )
             );
             
