@@ -93,10 +93,9 @@ Purchase
       :param integer $oid: Identifier of the object to be sold, as returned by :php:meth:`Vingd::createObject`.
       :param float $price: Object's price in VINGDs. Rounded to two decimal digits.
       :param string $context:
-         Arbitrary (user-defined) context handle of this purchase. The $context
-         shall be referenced on the access verification handler URL. (Usage
-         discouraged for sensitive data.)
-         Default: no context associated with order.
+         Arbitrary (user-defined) context handle of this purchase. $context
+         shall be retrieved upon purchase/token verification. (Usage discouraged
+         for sensitive data.) Default: no context associated with order.
       :param string $expires:
          Expiry timestamp / validity period of the order being generated
          (accepts any PHP/strtotime-parsable date/time string, including ISO

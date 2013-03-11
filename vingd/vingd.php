@@ -337,7 +337,7 @@ class Vingd {
      *      Object's price in VINGDs. Rounded to two decimal digits.
      * @param string $context
      *      Arbitrary (user-defined) context handle of this purchase. The
-     *      $context shall be referenced on the access verification handler URL.
+     *      $context shall be retrieved upon purchase/token verification.
      *      (Usage discouraged for sensitive data.)
      * @param string $expires
      *      Expiry timestamp / validity period of the order being generated
