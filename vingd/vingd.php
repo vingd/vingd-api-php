@@ -230,7 +230,8 @@ class Vingd {
     
     // Utility function for concatenation of URL and GET parameters.
     // returns string: base + {? | &} + params
-    private function concatURL($base, $params) {
+    private function concatURL($base, $params = '') {
+        if (!strlen($params)) return $base;
         $glue = (strpos($base, "?") !== false) ? "&" : "?";
         $url = $base . $glue . $params;
         return $url;
@@ -243,7 +244,7 @@ class Vingd {
      * @param string $base URL
      * @param array $params Array of GET params to be concatenated to the URL.
      */
-    private function buildURL($base, $params) {
+    private function buildURL($base, $params = array()) {
         return $this->concatURL($base, http_build_query($params));
     }
     
@@ -352,21 +353,22 @@ class Vingd {
     ) {
         $data = array(
             "price" => intval($price * 100),
-            "order_expires" => $this->toIsoDate($expires)
+            "order_expires" => $this->toIsoDate($expires),
+            "context" => $context
         );
         $ret = $this->request('POST', "/objects/$oid/orders", json_encode($data));
         $id = $this->unpackBatchResponse($ret);
-        $cx = is_null($context) ? array() : array('context' => $context);
         $order = array(
             "id" => $id,
             "expires" => $this->toIsoDate($expires),
+            "context" => $context,
             "object" => array(
                 "id" => $oid,
                 "price" => $data['price']
             ),
             "urls" => array(
-                "redirect" => $this->buildURL("{$this->frontend}/orders/$id/add/", $cx),
-                "popup" => $this->buildURL("{$this->frontend}/popup/orders/$id/add/", $cx)
+                "redirect" => $this->buildURL("{$this->frontend}/orders/$id/add/"),
+                "popup" => $this->buildURL("{$this->frontend}/popup/orders/$id/add/")
             )
         );
         return $order;
@@ -404,6 +406,8 @@ class Vingd {
      *              Purchase ID
      *        - 'transferid':
      *              Vingd transfer ID
+     *        - 'context':
+     *              Order context
      * 
      * @throws VingdException, Exception
      */

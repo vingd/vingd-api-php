@@ -45,14 +45,14 @@ echo "Object last modified at {$object['timestamp_modified']}, new url is {$obje
 $objects = $v->getObjects();
 echo 'I have ', count($objects), " registered objects I can sell.\n";
 
-$order = $v->createOrder($oid, 2.00);
+$order = $v->createOrder($oid, 2.00, "some optional context");
 echo "I've also created an order (id={$order['id']}) for the object (oid={$order['object']['id']}): {$order['urls']['redirect']}.\n";
 
 echo "After you buy it, enter the Token ID here ('tid' param on callback url): ";
 $tid = fgets(STDIN);
 $purchase = $v->verifyPurchase(array('oid' => $oid, 'tid' => $tid));
 $huid_buyer = $purchase['huid'];
-echo "Purchase verified (buyer's HUID = $huid_buyer).\n";
+echo "Purchase verified (buyer's HUID = $huid_buyer, context = '{$purchase['context']}').\n";
 
 $commit = $v->commitPurchase($purchase);
 echo "Content served, and purchase committed.\n";
