@@ -14,6 +14,7 @@
  */
 
 require_once("http.php");
+require_once("util.php");
 
 
 /**
@@ -303,7 +304,11 @@ class Vingd {
                 "url" => $url
             )
         );
-        $ret = $this->request('PUT', "/registry/objects/$oid/", json_encode($data));
+        $ret = $this->request(
+            'PUT',
+            safeformat("/registry/objects/{:int}/", $oid),
+            json_encode($data)
+        );
         return $this->unpackBatchResponse($ret, 'oid');
     }
     
@@ -314,7 +319,10 @@ class Vingd {
      * @throws VingdException, Exception
      */
     public function getObject($oid) {
-        return $this->request('GET', "/registry/objects/$oid/");
+        return $this->request(
+            'GET',
+            safeformat("/registry/objects/{:int}/", $oid)
+        );
     }
     
     /**
@@ -356,7 +364,11 @@ class Vingd {
             "order_expires" => $this->toIsoDate($expires),
             "context" => $context
         );
-        $ret = $this->request('POST', "/objects/$oid/orders", json_encode($data));
+        $ret = $this->request(
+            'POST',
+            safeformat("/objects/{:int}/orders", $oid),
+            json_encode($data)
+        );
         $id = $this->unpackBatchResponse($ret);
         $order = array(
             "id" => $id,
@@ -424,7 +436,10 @@ class Vingd {
         if (!isset($token['tid']) || !($tid = $token['tid'])) {
             throw new VingdException('Invalid token.');
         }
-        return $this->request('GET', "/objects/$oid/tokens/$tid");
+        return $this->request(
+            'GET',
+            safeformat("/objects/{:int}/tokens/{:hex}", $oid, $tid)
+        );
     }
     
     /**
@@ -450,7 +465,7 @@ class Vingd {
         $transferid = $purchase['transferid'];
         return $this->request(
             'PUT',
-            "/purchases/$purchaseid",
+            safeformat("/purchases/{:int}", $purchaseid),
             json_encode(array("transferid" => $transferid))
         );
     }
@@ -579,13 +594,20 @@ class Vingd {
         if (!is_null($uid))
             foreach ($allowed as $name)
                 if (array_key_exists($name, $uid) && !is_null($uid[$name]))
-                    $resource .= "/$name={$uid[$name]}";
+                    $resource .= safeformat("/$name={:int}", $uid[$name]);
         
-        $allowed = array('first', 'last', 'since', 'until');
+        $allowed = array('first', 'last');
         if (!is_null($limit))
             foreach ($allowed as $name)
                 if (array_key_exists($name, $limit) && !is_null($limit[$name]))
-                    $resource .= "/$name={$limit[$name]}";
+                    $resource .= safeformat("/$name={:int}", $limit[$name]);
+        
+        $allowed = array('since', 'until');
+        if (!is_null($limit))
+            foreach ($allowed as $name)
+                if (array_key_exists($name, $limit) && !is_null($limit[$name]))
+                    // XXX: isobasic filter and date-to-iso converter
+                    $resource .= safeformat("/$name={:str}", $limit[$name]);
         
         $transfers = $this->request('GET', $resource);
         
