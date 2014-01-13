@@ -3,7 +3,7 @@
 require_once(dirname(__FILE__).'/../vingd/vingd.php');
 
 // sandbox backend:
-$v = new Vingd("test@knopso.com", "123", Vingd::URL_ENDPOINT_SANDBOX, Vingd::URL_FRONTEND_SANDBOX);
+$v = new Vingd("test@vingd.com", "123", Vingd::URL_ENDPOINT_SANDBOX, Vingd::URL_FRONTEND_SANDBOX);
 
 // in production use:
 //$v = new Vingd("<vingd-login-username>", "<vingd-login-password>");
