@@ -91,6 +91,7 @@ class Vingd {
     
     // date format used by vingd broker (ISO 8601)
     const DATE_ISO = 'c';
+    const DATE_ISO_BASIC = 'Ymd\THisO';
     
     // unix epoch timestamp
     const DATE_UNIX = 'U';
@@ -212,6 +213,10 @@ class Vingd {
     // returns: iso date (string)
     private function toIsoDate($timestamp, $default = null) {
         return $this->formatDate(self::DATE_ISO, $timestamp, $default);
+    }
+    
+    private function toIsoBasicDate($timestamp, $default = null) {
+        return $this->formatDate(self::DATE_ISO_BASIC, $timestamp, $default);
     }
     
     // converts various date/time and period formats into
@@ -349,7 +354,8 @@ class Vingd {
      *      (Usage discouraged for sensitive data.)
      * @param string $expires
      *      Expiry timestamp / validity period of the order being generated
-     *      (accepts any PHP parsable date/time string).
+     *      (accepts any PHP parsable date/time string, i.e. any
+     *      `strtotime`-compatible timestamp, incl. ISO 8601 basic/extended).
      *      Default: '+15 minutes' (== order expires in 15 minutes)
      * 
      * @return array Vingd order description.
@@ -361,7 +367,7 @@ class Vingd {
     ) {
         $data = array(
             "price" => intval($price * 100),
-            "order_expires" => $this->toIsoDate($expires),
+            "order_expires" => $this->toIsoBasicDate($expires),
             "context" => $context
         );
         $ret = $this->request(
@@ -536,9 +542,9 @@ class Vingd {
      *        - 'last' => <integer>:
      *              Number of transfers to return (counting from last,
      *              ordered by date of creation in reverse)
-     *        - 'since' => <timestamp_iso8601_basic>:
+     *        - 'since' => <`strtotime`-compatible timestamp, incl. ISO8601>:
      *              Transfers newer than this point in time shall be returned.
-     *        - 'until' => <timestamp_iso8601_basic>:
+     *        - 'until' => <`strtotime`-compatible timestamp, incl. ISO8601>:
      *              Transfers older than this point in time shall be returned.
      * 
      * @return array
@@ -606,8 +612,7 @@ class Vingd {
         if (!is_null($limit))
             foreach ($allowed as $name)
                 if (array_key_exists($name, $limit) && !is_null($limit[$name]))
-                    // XXX: isobasic filter and date-to-iso converter
-                    $resource .= safeformat("/$name={:str}", $limit[$name]);
+                    $resource .= "/$name=".$this->toIsoBasicDate($limit[$name]);
         
         $transfers = $this->request('GET', $resource);
         
@@ -624,8 +629,8 @@ class Vingd {
      * Makes a new voucher.
      *
      * @param float $amount Voucher amount in VINGDs.
-     * @param date $until `strtotime`-acceptable timestamp of voucher expiry.
-     *      (like '+1 day', '+1 month', etc.)
+     * @param date $until `strtotime`-compatible timestamp of voucher expiry,
+     *      incl. ISO 8601 basic/extended (like '+1 day', '+1 month', etc.).
      * @param string $message A message user shall be presented with after
      *      submitting the voucher (on Vingd frontend).
      * @param string $gid Voucher Group ID (alphanumeric string:
@@ -645,7 +650,7 @@ class Vingd {
     ) {
         $params = array(
             "amount" => intval($amount * 100),
-            "until" => $this->toIsoDate($until),
+            "until" => $this->toIsoBasicDate($until),
             "message" => $message,
             "description" => $description,
             "gid" => $gid
@@ -660,7 +665,7 @@ class Vingd {
             "transferid" => $raw["id_fort_transfer"],
             "description" => $raw["description"],
             "message" => $raw["message"],
-            "until" => $raw["ts_valid_until"],
+            "until" => $this->toIsoDate($raw["ts_valid_until"]),
             "code" => $raw["vid_encoded"],
             "gid" => $raw["gid"],
             "urls" => array(
