@@ -3,8 +3,8 @@
 /**
  * Vingd API interface for PHP.
  *
- * @version 1.6
- * @date 2013-02-13
+ * @version 1.7
+ * @date 2014-01-14
  * @author Radomir Stevanovic <radomir@vingd.com>
  * @copyright Copyright 2012 Vingd, Inc.
  * @package vingd-api-php
@@ -70,7 +70,7 @@ class VingdException extends Exception {
  * Vingd API interface class.
  */
 class Vingd {
-    const USER_AGENT = 'vingd-api-php/1.6';
+    const USER_AGENT = 'vingd-api-php/1.7';
 
     // production urls
     const URL_ENDPOINT = 'https://api.vingd.com/broker/v1';
