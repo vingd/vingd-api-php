@@ -509,6 +509,59 @@ class Vingd {
     }
     
     /**
+     * Shorthand to fetch account balance for the user defined with `huid`.
+     *
+     * @return float Account balance.
+     * @throws VingdException, Exception
+     */
+    public function authorizedGetAccountBalance($huid) {
+        $account = $this->request(
+            'GET',
+            safeformat('/fort/accounts/{:hex}', $huid)
+        );
+        return $account['balance'] / 100.0;
+    }
+
+    /**
+     * Does delegated (pre-authorized) purchase of `oid` in the name of `huid`,
+     * at price `price` (vingd transferred from `huid` to consumer's acc).
+     *
+     * @throws VingdException, Exception
+     */
+    public function authorizedPurchaseObject($oid, $price, $huid) {
+        return $this->request(
+            'POST',
+            safeformat('/objects/{:int}/purchases', $oid),
+            json_encode(array(
+                'price' => $price,
+                'huid' => $huid,
+                'autocommit' => true,
+            ))
+        );
+    }
+
+    /**
+     * Creates Vingd user (profile & account), links it with the provided
+     * identities (to be verified later), and sets the delegate-user
+     * permissions (creator being the delegate). Returns Vingd user's `huid`
+     * (hashed user id).
+     *
+     * @return string huid.
+     * @throws VingdException, Exception
+     */
+    public function authorizedCreateUser($identities, $primary, $permissions=NULL) {
+        return $this->request(
+            'POST',
+            '/id/users/',
+            json_encode(array(
+                'identities' => $identities,
+                'primary_identity' => $primary,
+                'delegate_permissions' => $permissions
+            ))
+        );
+    }
+
+    /**
      * Fetches a filtered list of vingd transfers related to the authenticated
      * user.
      * 
