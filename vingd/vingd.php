@@ -503,7 +503,7 @@ class Vingd {
      * @return float Account balance.
      * @throws VingdException, Exception
      */
-    public function getUserBalance() {
+    public function getAccountBalance() {
         $account = $this->request('GET', '/fort/accounts/');
         return $account['balance'] / 100.0;
     }
