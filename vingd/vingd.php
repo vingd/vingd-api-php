@@ -549,7 +549,9 @@ class Vingd {
      * @return string huid.
      * @throws VingdException, Exception
      */
-    public function authorizedCreateUser($identities, $primary, $permissions=NULL) {
+    public function authorizedCreateUser(
+        $identities = null, $primary = null, $permissions = null
+    ) {
         return $this->request(
             'POST',
             '/id/users/',
