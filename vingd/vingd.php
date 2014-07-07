@@ -533,7 +533,7 @@ class Vingd {
             'POST',
             safeformat('/objects/{:int}/purchases', $oid),
             json_encode(array(
-                'price' => $price,
+                'price' => intval($price * 100),
                 'huid' => $huid,
                 'autocommit' => true,
             ))
