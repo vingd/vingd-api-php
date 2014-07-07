@@ -15,7 +15,7 @@ $v = new Vingd("test@vingd.com", "123", Vingd::URL_ENDPOINT_SANDBOX, Vingd::URL_
 $profile = $v->getUserProfile();
 print "I ({$profile['name']}) registered on {$profile['timestamp_created']}.\n";
 
-$balance = $v->getUserBalance();
+$balance = $v->getAccountBalance();
 echo "My balance is VINGD $balance.\n";
 
 
