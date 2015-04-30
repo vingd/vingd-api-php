@@ -61,7 +61,7 @@ class Http {
         // set cURL options
         curl_setopt($this->curl, CURLOPT_URL, $url);
         curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, $o['sslverify']);
+        curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, $o['sslverify']? 2 : 0);
         curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, $o['sslverify']);
         curl_setopt($this->curl, CURLOPT_USERAGENT, $o['user-agent']);
         curl_setopt($this->curl, CURLOPT_CONNECTTIMEOUT, $o['timeout']);
